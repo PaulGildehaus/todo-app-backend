@@ -11,15 +11,23 @@ require('./config/passport');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+app.use(cors(
+    {
+        origin: [process.env.AMPLIFY_URI, 'http://localhost:3000'],
+        credentials: true,
+        exposedHeaders: ['set-cookie']
+    }
+));
+
 app.use(
     session({
         secret: process.env.SESSION_SECRET,
         resave: false,
-        saveUninitialized: true,
+        saveUninitialized: false,
         cookie: {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
+            secure: true,
+            sameSite: 'none',
+            domain: process.env.DOMAIN_NAME || 'localhost',
             maxAge: 1000 * 60 * 60 * 24,
         }
     })
@@ -29,12 +37,6 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cors(
-    {
-        origin: [process.env.AMPLIFY_URI, 'http://localhost:3000'],
-        credentials: true
-    }
-));
 app.use(express.json());
 
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/todo-app')
