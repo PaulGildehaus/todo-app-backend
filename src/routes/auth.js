@@ -11,6 +11,7 @@ router.get(
     '/google/callback',
     passport.authenticate('google', { failureRedirect: '/login', session: true }),
     (req, res) => {
+        console.log('OAuth successful! User:', req.user);
         res.cookie('auth_signal', 'true', {
             httpOnly: false,
             secure: true,

@@ -28,11 +28,15 @@ app.use(
             secure: true,
             sameSite: 'none',
             domain: process.env.DOMAIN_NAME || 'localhost',
+            httpOnly: true,
+            path: '/',
             maxAge: 1000 * 60 * 60 * 24,
         },
         proxy: true
     })
 );
+
+app.enable('trust proxy');
 
 app.use(passport.initialize());
 app.use(passport.session());
