@@ -29,7 +29,8 @@ app.use(
             sameSite: 'none',
             domain: process.env.DOMAIN_NAME || 'localhost',
             maxAge: 1000 * 60 * 60 * 24,
-        }
+        },
+        proxy: true
     })
 );
 

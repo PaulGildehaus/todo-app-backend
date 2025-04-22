@@ -11,7 +11,7 @@ router.get(
     '/google/callback',
     passport.authenticate('google', { failureRedirect: '/login', session: true }),
     (req, res) => {
-        res.cookie('auth_verified', 'true', {
+        res.cookie('auth_signal', 'true', {
             httpOnly: false,
             secure: true,
             sameSite: 'none',
