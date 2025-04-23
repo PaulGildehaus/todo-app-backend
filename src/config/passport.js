@@ -8,39 +8,67 @@ passport.use(
             clientID: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
             callbackURL: `${process.env.GOOGLE_CALLBACK_URL || 'https://localhost:5000'}/api/auth/google/callback`,
+            scope: ['profile', 'email'],
+            state: true
         },
         async (accessToken, refreshToken, profile, done) => {
             try {
-                let user = await User.findOne({ googleId: profile.id });
+                const email = profile.emails?.[0]?.value;
+                if (!email) {
+                    return done(new Error('No email found in Google profile'), null);
+                }
 
-                if (!user) {
+                let user = await User.findOne({ email });
+
+                if (user) {
+                    if (!user.googleId) {
+                        user.googleId = profile.id;
+                        await user.save();
+                    } else if (user.googleId !== profile.id) {
+                        return done(new Error('Email already in use.'), null);
+                    }
+                }
+                else {
                     user = new User({
                         googleId: profile.id,
                         username: profile.displayName,
-                        email: profile.emails[0].value,
+                        email: email
                     });
                     await user.save();
                 }
                 
-                done(null, user);
+                return done(null, user);
             } catch (error) {
-                console.error(error);
-                done(error, null);
+                console.error('Google auth Error: ', error);
+                return done(error, null);
             }
         }
     )
 );
 
 passport.serializeUser((user, done) => {
-    done(null, user.id);
+    process.nextTick(() => {
+        done(null, {
+            id: user.id,
+            strategy: 'google'
+        });
+    });
 });
 
-passport.deserializeUser(async (id, done) => {
+passport.deserializeUser(async (serialized, done) => {
     try {
-        const user = await User.findById(id);
-        done(null, user);
+        if (!serialized?.id) {
+            return done(new Error('No user ID found'), null);
+        }
+
+        const user = await User.findById(serialized.id);
+        if (!user) {
+            return done(new Error('User not found'), null);
+        }
+
+        return done(null, user);
     } catch (error) {
-        console.error(error);
-        done(error, null);
+        console.error('Deserialization Error: ', error);
+        return done(error, null);
     }
 });
