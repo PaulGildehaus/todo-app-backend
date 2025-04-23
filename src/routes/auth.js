@@ -3,7 +3,7 @@ const router = express.Router();
 const passport = require('passport');
 
 const AMPLIFY_URI = process.env.AMPLIFY_URI || 'http://localhost:3000';
-const DOMAIN = process.env.NODE_ENV === 'production' ? `.${process.env.DOMAIN_NAME}` : 'localhost';
+const DOMAIN = process.env.NODE_ENV === 'production' ? process.env.DOMAIN_NAME : 'localhost';
 
 router.get('/google', passport.authenticate('google', { 
     scope: ['profile', 'email'],
@@ -27,7 +27,7 @@ router.get('/check', (req, res) => {
         return res.json({ 
             isAuthenticated: true, 
             user: {
-                id: req.user.googleId,
+                id: req.user._id,
                 username: req.user.username,
                 email: req.user.email,
             }

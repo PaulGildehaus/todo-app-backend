@@ -17,10 +17,12 @@ app.use(cors(
         origin: [process.env.AMPLIFY_URI, 'http://localhost:3000'],
         credentials: true,
         exposedHeaders: ['set-cookie'],
-        methods: ['GET', 'POST', 'PUT', 'DELETE'],
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
         allowedHeaders: ['Content-Type', 'Authorization']
     }
 ));
+
+app.options('*', cors());
 
 app.set('trust proxy', 1);
 
@@ -36,16 +38,16 @@ app.use(
         cookie: {
             secure: process.env.NODE_ENV === 'production',
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-            domain: process.env.NODE_ENV === 'production' ? `.${process.env.DOMAIN_NAME}` : 'localhost',
+            domain: process.env.NODE_ENV === 'production' ? process.env.DOMAIN_NAME : 'localhost',
             httpOnly: true,
             maxAge: 1000 * 60 * 60 * 24,
         }
     })
 );
 
+
 app.use(passport.initialize());
 app.use(passport.session());
-
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
