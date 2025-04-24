@@ -81,6 +81,7 @@ router.delete('/:id', auth, async (req, res) => {
     }
 });
 
+// Logout route to destroy the session
 router.post('/logout', auth, (req, res) => {
     req.logout((error) => {
         if (error) return res.status(500).json({ message: 'Logout Failed.' });

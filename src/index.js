@@ -12,6 +12,8 @@ require('./config/passport');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// CORS configuration to allow requests from the frontend
+// and to enable credentials (cookies) to be sent with requests
 app.use(cors(
     {
         origin: [process.env.AMPLIFY_URI, 'http://localhost:3000'],
@@ -22,10 +24,13 @@ app.use(cors(
     }
 ));
 
+// Allow all origins for preflight requests
 app.options('*', cors());
-
+// Setting tust proxy to 1 to trust the first proxy in the chain for the loadbalancer
 app.set('trust proxy', 1);
 
+// Session configuration using MongoDB as the session store
+// The session secret is stored in an environment variable for security
 app.use(
     session({
         secret: process.env.SESSION_SECRET,
@@ -45,7 +50,8 @@ app.use(
     })
 );
 
-
+// Middleware to parse incoming request bodies
+// and to initialize Passport.js for authentication
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -62,24 +68,30 @@ if (process.env.NODE_ENV === 'production') {
     });
 }
 
+// MongoDB connection using Mongoose
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/todo-app')
     .then(() => console.log('MongoDB connected'))
     .catch(err => console.log(err));
 
-
+// Routes for authentication and todo items
 app.use('/api/auth', authRoutes);
 
+// Importing the todo routes from the routes directory
 const todoRoutes = require('./routes/todos');
 app.use('/api/todos', todoRoutes);
 
+// Route to check if the server is running
 app.get('/', (req, res) => {
     res.send('To-Do App Backend Connection Successful');
 });
 
+// Logging the port the server is running on
 app.listen(PORT, () => {
     console.log(`Server is running on port: ${PORT}`);
 });
 
+// Health check route to verify the server is running
+// This route can be used by load balancers or monitoring tools to check the health of the server
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'healthy' });
 });

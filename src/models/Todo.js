@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+// Define the Todo schema for MongoDB using Mongoose
 const TodoSchema = new mongoose.Schema({
     task: {
         type: String,

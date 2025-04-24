@@ -2,6 +2,7 @@ const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User = require('../models/User');
 
+// Create a new Google strategy for authentication
 passport.use(
     new GoogleStrategy(
         {
@@ -46,6 +47,7 @@ passport.use(
     )
 );
 
+// Serialize user information into the session
 passport.serializeUser((user, done) => {
     process.nextTick(() => {
         done(null, {
@@ -55,6 +57,7 @@ passport.serializeUser((user, done) => {
     });
 });
 
+// Deserialize user information from the session
 passport.deserializeUser(async (serialized, done) => {
     try {
         if (!serialized?.id) {

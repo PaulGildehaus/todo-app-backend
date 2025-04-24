@@ -5,11 +5,13 @@ const passport = require('passport');
 const AMPLIFY_URI = process.env.AMPLIFY_URI || 'http://localhost:3000';
 const DOMAIN = process.env.NODE_ENV === 'production' ? process.env.DOMAIN_NAME : 'localhost';
 
+// Force the account selection screen to show up every time the user logs in
 router.get('/google', passport.authenticate('google', { 
     scope: ['profile', 'email'],
     prompt: 'select_account' 
 }));
 
+// Callback route for Google to redirect to after authentication
 router.get(
     '/google/callback',
     passport.authenticate('google', { 
@@ -22,6 +24,7 @@ router.get(
     }
 );
 
+// Route to check if the user is authenticated
 router.get('/check', (req, res) => {
     if (req.isAuthenticated()) {
         return res.json({ 
@@ -35,22 +38,6 @@ router.get('/check', (req, res) => {
     } else {
         return res.status(401).json({ isAuthenticated: false });
     }
-});
-
-router.get('/logout', (req, res) => {
-    req.logout((error) => {
-        if (error) return res.status(500).json({ message: 'Logout Failed.' });
-
-        req.session.destroy((err) => {
-            if (err) return res.status(500).json({ message: 'Session destruction failed.' });
-        });
-        res.clearCookie('connect.sid', { 
-            domain: DOMAIN,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        });
-        res.redirect(AMPLIFY_URI);
-    });
 });
 
 module.exports = router;
